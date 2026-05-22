@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Volleyball — Overlay</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: transparent !important;
+    width: 360px;
+    height: auto;
+    overflow: hidden;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    display: inline-block;
+  }
+
+  .ov-table {
+    border-collapse: collapse;
+    background: rgba(0, 0, 0, 0.76);
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.1);
+    width: 100%;
+  }
+
+  .ov-tournament-cell {
+    font-size: 8px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.55);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-align: center;
+    padding: 4px 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .ov-table thead th {
+    font-size: 7px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 5px 6px 4px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .ov-table thead th.th-team { text-align: left; padding-left: 10px; }
+
+  .ov-table tbody td {
+    padding: 0 6px;
+    text-align: center;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    height: 27px;
+    white-space: nowrap;
+    border-right: 1px solid rgba(255,255,255,0.05);
+  }
+  .ov-table tbody td:last-child { border-right: none; }
+  .ov-table tbody tr { border-top: 1px solid rgba(255,255,255,0.05); }
+  .ov-table tbody tr:first-child { border-top: none; }
+
+  .ov-team-cell {
+    text-align: left !important;
+    padding-left: 10px !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    color: rgba(255,255,255,0.9) !important;
+    min-width: 110px;
+    max-width: 130px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .ov-sets-cell {
+    font-size: 13px !important;
+    color: #e8a93c !important;
+    min-width: 26px;
+    font-weight: 700 !important;
+  }
+  .ov-set-score {
+    font-size: 11px !important;
+    color: rgba(255,255,255,0.38) !important;
+    min-width: 22px;
+  }
+  .ov-set-score.cur { color: #fff !important; font-size: 12px !important; font-weight: 700 !important; }
+  .ov-set-score.wa { color: #e8a93c !important; }
+  .ov-set-score.wb { color: #7ec8e3 !important; }
+  .ov-set-score.em { color: rgba(255,255,255,0.14) !important; font-size: 9px !important; }
+
+  .ov-footer {
+    text-align: right;
+    padding: 3px 9px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    font-size: 7px;
+    color: rgba(255,255,255,0.18);
+    letter-spacing: 0.07em;
+  }
+</style>
+</head>
+<body>
+
+<table class="ov-table">
+  <thead>
+    <tr>
+      <td colspan="7" class="ov-tournament-cell" id="ov-tournament">—</td>
+    </tr>
+    <tr>
+      <th class="th-team">Команда</th>
+      <th>Сеты</th>
+      <th>П1</th>
+      <th>П2</th>
+      <th>П3</th>
+      <th>П4</th>
+      <th>П5</th>
+    </tr>
+  </thead>
+  <tbody id="ov-body"></tbody>
+  <tfoot>
+    <tr><td colspan="7" class="ov-footer">volleyball</td></tr>
+  </tfoot>
+</table>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script>
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAA8lFJKbox0HmRaIsr7Tc9TJhSEblOSsM",
+  authDomain: "mybeachscore.firebaseapp.com",
+  databaseURL: "https://mybeachscore-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "mybeachscore",
+  storageBucket: "mybeachscore.firebasestorage.app",
+  messagingSenderId: "831027179059",
+  appId: "1:831027179059:web:c6dcfe2220973f03023d46"
+};
+
+let S = {
+  scoreA: 0, scoreB: 0,
+  setsA: 0, setsB: 0,
+  history: [],
+  nameA: '', nameB: '',
+  tournament: ''
+};
+
+function render() {
+  document.getElementById('ov-tournament').textContent = S.tournament || '—';
+
+  const rows = ['a', 'b'].map(team => {
+    const isA = team === 'a';
+    const name = isA ? (S.nameA || 'Команда А') : (S.nameB || 'Команда Б');
+    const sets = isA ? S.setsA : S.setsB;
+    const curr = isA ? S.scoreA : S.scoreB;
+
+    let cells = '';
+    for (let i = 0; i < 5; i++) {
+      if (i < S.history.length) {
+        const h = S.history[i];
+        const sc = isA ? h.a : h.b;
+        const won = isA ? h.winnerA : !h.winnerA;
+        cells += `<td class="ov-set-score ${won ? 'wa' : 'wb'}">${sc}</td>`;
+      } else if (i === S.history.length) {
+        cells += `<td class="ov-set-score cur">${curr}</td>`;
+      } else {
+        cells += `<td class="ov-set-score em">—</td>`;
+      }
+    }
+
+    return `<tr>
+      <td class="ov-team-cell">${name}</td>
+      <td class="ov-sets-cell">${sets}</td>
+      ${cells}
+    </tr>`;
+  });
+
+  document.getElementById('ov-body').innerHTML = rows.join('');
+}
+
+firebase.initializeApp(FIREBASE_CONFIG);
+
+const _courtParam = new URLSearchParams(window.location.search).get('court') || '1';
+const _courtPath = 'match_court' + _courtParam;
+
+firebase.database().ref(_courtPath).on('value', snapshot => {
+  const data = snapshot.val();
+  if (!data) return;
+  S.scoreA    = data.scoreA    || 0;
+  S.scoreB    = data.scoreB    || 0;
+  S.setsA     = data.setsA     || 0;
+  S.setsB     = data.setsB     || 0;
+  S.history   = data.history   || [];
+  S.nameA     = data.nameA     || '';
+  S.nameB     = data.nameB     || '';
+  S.tournament = data.tournament || '';
+  render();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Volleyball — Лобби</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root {
+    --gold: #e8a93c;
+    --bg: #0c1520;
+    --border: rgba(255,255,255,0.08);
+    --text: #ffffff;
+    --text-dim: rgba(255,255,255,0.45);
+    --text-hint: rgba(255,255,255,0.25);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+  }
+
+  .lobby-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 42px;
+    color: var(--gold);
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+
+  .lobby-sub {
+    font-size: 13px;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    margin-bottom: 48px;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  .courts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    width: 100%;
+    max-width: 480px;
+  }
+
+  .court-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 32px 20px;
+    text-decoration: none;
+    color: var(--text);
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .court-card:hover {
+    background: rgba(232,169,60,0.08);
+    border-color: rgba(232,169,60,0.4);
+  }
+  .court-card:active {
+    opacity: 0.75;
+    transform: scale(0.97);
+  }
+
+  .court-number {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 64px;
+    line-height: 1;
+    color: var(--gold);
+    letter-spacing: 2px;
+  }
+
+  .court-label {
+    font-size: 12px;
+    color: var(--text-dim);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .lobby-footer {
+    margin-top: 48px;
+    font-size: 11px;
+    color: var(--text-hint);
+    letter-spacing: 0.08em;
+  }
+</style>
+</head>
+<body>
+
+  <div class="lobby-title">VOLLEYBALL</div>
+  <div class="lobby-sub">Выберите корт</div>
+
+  <div class="courts-grid">
+    <a class="court-card" href="index.html?court=1">
+      <div class="court-number">1</div>
+      <div class="court-label">Корт 1</div>
+    </a>
+    <a class="court-card" href="index.html?court=2">
+      <div class="court-number">2</div>
+      <div class="court-label">Корт 2</div>
+    </a>
+  </div>
+
+  <div class="lobby-footer">volleyball scoreboard</div>
+
+</body>
+</html>
